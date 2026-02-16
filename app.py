@@ -25,7 +25,7 @@ st.set_page_config(page_title="Smart Resume Skill Gap Analyzer", layout="centere
 
 st.title("Smart Resume Skill Gap Analyzer")
 
-uploaded_file = st.file_uploader("Upload Resume (TXT file)", type=["txt"])
+uploaded_file = st.file_uploader("Upload Resume (PDF file)", type=["pdf"])
 
 if uploaded_file is not None:
     resume_text = uploaded_file.read().decode("utf-8")
