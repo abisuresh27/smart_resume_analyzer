@@ -1,6 +1,8 @@
 import streamlit as st
 import pickle
 import re
+import PyPDF2
+import docx
 
 # Load model and vectorizer
 model = pickle.load(open("model.pkl", "rb"))
@@ -24,15 +26,34 @@ skill_suggestions = {
 st.set_page_config(page_title="Smart Resume Skill Gap Analyzer", layout="centered")
 
 st.title("Smart Resume Skill Gap Analyzer")
+st.write("Upload your resume to analyze skills and predict job role ✅")
 
-uploaded_file = st.file_uploader("Upload Resume ", type=["pdf","docx","txt"])
+uploaded_file = st.file_uploader("Upload Resume", type=["pdf", "docx", "txt"])
+
+resume_text = ""
 
 if uploaded_file is not None:
-    resume_text = uploaded_file.read().decode("utf-8")
+    # Handle PDF
+    if uploaded_file.type == "application/pdf":
+        reader = PyPDF2.PdfReader(uploaded_file)
+        for page in reader.pages:
+            resume_text += page.extract_text()
 
+    # Handle DOCX
+    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        doc = docx.Document(uploaded_file)
+        for para in doc.paragraphs:
+            resume_text += para.text + "\n"
+
+    # Handle TXT
+    elif uploaded_file.type == "text/plain":
+        resume_text = uploaded_file.read().decode("utf-8")
+
+    # Show preview
     st.subheader("Resume Preview")
     st.write(resume_text[:500])
 
+    # Prediction
     if st.button("Predict Role"):
         clean_resume = preprocess(resume_text)
         vector = vectorizer.transform([clean_resume])
@@ -46,3 +67,4 @@ if uploaded_file is not None:
                 st.write(f"- {skill}")
         else:
             st.write("No skill suggestions available.")
+          
